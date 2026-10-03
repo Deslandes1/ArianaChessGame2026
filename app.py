@@ -1,172 +1,106 @@
 """
-Ariana Chess Academy — Streamlit entry point.
-Embeds the full interactive chess board and shows Python-side coaching metrics.
+Ariana — smiling 19-year-old Black Haitian girl.
+Returned as a self-contained SVG string so it can be embedded anywhere.
 """
 
-from pathlib import Path
-import streamlit as st
-import streamlit.components.v1 as components
+_ARIANA_SVG = """
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="100%" height="100%">
+  <defs>
+    <radialGradient id="avBg" cx="50%" cy="32%" r="80%">
+      <stop offset="0%" stop-color="#4ab0ff"/>
+      <stop offset="100%" stop-color="#0d4c80"/>
+    </radialGradient>
+    <linearGradient id="avSkin" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#a5714a"/>
+      <stop offset="55%"  stop-color="#8a5636"/>
+      <stop offset="100%" stop-color="#6b3f22"/>
+    </linearGradient>
+    <radialGradient id="avHair" cx="50%" cy="40%" r="70%">
+      <stop offset="0%"   stop-color="#3a2010"/>
+      <stop offset="60%"  stop-color="#1e0f08"/>
+      <stop offset="100%" stop-color="#0a0503"/>
+    </radialGradient>
+  </defs>
 
-from chess_engine import ChessEngine
-from ariana_avatar import get_ariana_svg
+  <circle cx="100" cy="100" r="97" fill="url(#avBg)"/>
+  <circle cx="100" cy="100" r="97" fill="none" stroke="#ffd93b" stroke-width="3.5"/>
 
-# ─────────────────────────────────────────────────────────────
-# Page configuration
-# ─────────────────────────────────────────────────────────────
-st.set_page_config(
-    page_title="Ariana Chess Academy",
-    page_icon="♛",
-    layout="wide",
-    initial_sidebar_state="expanded",
-)
+  <circle cx="100" cy="100" r="72" fill="url(#avHair)"/>
+  <circle cx="34"  cy="78"  r="16" fill="#0a0503"/>
+  <circle cx="40"  cy="118" r="15" fill="#0a0503"/>
+  <circle cx="166" cy="78"  r="16" fill="#0a0503"/>
+  <circle cx="160" cy="118" r="15" fill="#0a0503"/>
+  <circle cx="46"  cy="46"  r="15" fill="#0a0503"/>
+  <circle cx="154" cy="46"  r="15" fill="#0a0503"/>
+  <circle cx="74"  cy="30"  r="15" fill="#0a0503"/>
+  <circle cx="126" cy="30"  r="15" fill="#0a0503"/>
+  <circle cx="100" cy="26"  r="16" fill="#0a0503"/>
+  <ellipse cx="80" cy="58" rx="24" ry="12" fill="#4a2a15" opacity="0.55"/>
+  <ellipse cx="120" cy="58" rx="18" ry="9"  fill="#4a2a15" opacity="0.4"/>
 
-# ─────────────────────────────────────────────────────────────
-# Custom CSS for a polished, dark-themed Streamlit shell
-# ─────────────────────────────────────────────────────────────
-st.markdown(
-    """
-    <style>
-        .stApp {
-            background: radial-gradient(circle at 50% 0%, #16203a 0%, #0a0e1a 60%);
-        }
-        [data-testid="stSidebar"] {
-            background: linear-gradient(180deg, #0f1830 0%, #0a0e1a 100%);
-            border-right: 1px solid #2a3550;
-        }
-        [data-testid="stSidebar"] h1, [data-testid="stSidebar"] h2,
-        [data-testid="stSidebar"] h3, [data-testid="stSidebar"] p,
-        [data-testid="stSidebar"] li, [data-testid="stSidebar"] span {
-            color: #d0e0ff !important;
-        }
-        .ariana-sidebar-card {
-            background: linear-gradient(135deg, #1b2440 0%, #262e4e 100%);
-            border: 1px solid #2a3550;
-            border-left: 4px solid #ffd93b;
-            border-radius: 12px;
-            padding: 14px 16px;
-            margin: 10px 0 16px 0;
-        }
-        .ariana-sidebar-card h3 {
-            color: #ffd93b !important;
-            font-size: 1rem;
-            margin: 0 0 6px 0;
-        }
-        .ariana-sidebar-card p {
-            color: #cfe0ff !important;
-            font-size: .85rem;
-            line-height: 1.4;
-            margin: 0;
-        }
-        .metric-pill {
-            display: inline-block;
-            background: rgba(58,160,255,.15);
-            border: 1px solid #3aa0ff;
-            color: #d0e0ff;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: .78rem;
-            margin: 3px 4px 3px 0;
-        }
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
+  <path d="M 34 200 C 40 168, 68 148, 100 148 L 100 200 Z" fill="#d21034"/>
+  <path d="M 100 200 L 100 148 C 132 148, 160 168, 166 200 Z" fill="#00209f"/>
+  <rect x="93" y="148" width="14" height="52" fill="#ffffff"/>
+  <path d="M 82 152 L 100 174 L 118 152" fill="none" stroke="#ffffff"
+        stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>
 
-# ─────────────────────────────────────────────────────────────
-# Sidebar — Ariana intro + game info
-# ─────────────────────────────────────────────────────────────
-with st.sidebar:
-    st.markdown(
-        f"""
-        <div style="text-align:center; margin-bottom: 6px;">
-            <div style="width:120px; height:120px; margin: 0 auto;
-                        filter: drop-shadow(0 8px 20px rgba(58,160,255,.5));">
-                {get_ariana_svg()}
-            </div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-    st.markdown("## ♛ Ariana Chess Academy")
-    st.markdown(
-        "<p style='color:#a0b0d0; font-size:.88rem; margin-top:-6px;'>"
-        "Learn chess the perfect way — with a coach who always shows you the best move."
-        "</p>",
-        unsafe_allow_html=True,
-    )
+  <path d="M 86 128 L 86 152 Q 100 160, 114 152 L 114 128 Z" fill="#6b3f22"/>
+  <path d="M 86 128 Q 100 140, 114 128 L 114 136 Q 100 148, 86 136 Z"
+        fill="#4a2a15" opacity="0.55"/>
 
-    st.markdown(
-        """
-        <div class="ariana-sidebar-card">
-            <h3>💡 How to play</h3>
-            <p>
-                1. Tap any of your pieces to see its legal moves.<br>
-                2. Follow the <b>golden arrow</b> — that is Ariana's suggested move.<br>
-                3. Drag the piece to its destination, or click <b>▶ Play This Move</b>.
-            </p>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+  <ellipse cx="100" cy="102" rx="40" ry="44" fill="url(#avSkin)"/>
+  <ellipse cx="60"  cy="106" rx="7.5" ry="10.5" fill="#7a4828"/>
+  <ellipse cx="140" cy="106" rx="7.5" ry="10.5" fill="#7a4828"/>
+  <circle cx="60"  cy="118" r="4.5" fill="none" stroke="#ffd93b" stroke-width="2"/>
+  <circle cx="140" cy="118" r="4.5" fill="none" stroke="#ffd93b" stroke-width="2"/>
 
-    st.markdown("### 🎯 Features")
-    st.markdown(
-        '<span class="metric-pill">Full FIDE Rules</span>'
-        '<span class="metric-pill">Auto-Suggest Arrow</span>'
-        '<span class="metric-pill">Checkmate & Draw</span>'
-        '<span class="metric-pill">Undo & History</span>'
-        '<span class="metric-pill">Beginner Coach</span>',
-        unsafe_allow_html=True,
-    )
+  <path d="M 60 92 C 58 60, 78 40, 100 40 C 122 40, 142 60, 140 92
+           C 136 76, 128 66, 120 62 C 116 74, 108 82, 100 82
+           C 92 82, 84 74, 80 62 C 72 66, 64 76, 60 92 Z" fill="url(#avHair)"/>
+  <path d="M 60 92 C 54 118, 52 148, 56 178 L 72 178
+           C 66 148, 66 120, 68 100 Z" fill="url(#avHair)"/>
+  <path d="M 140 92 C 146 118, 148 148, 144 178 L 128 178
+           C 134 148, 134 120, 132 100 Z" fill="url(#avHair)"/>
 
-    st.markdown("---")
+  <path d="M 72 86 Q 80 80, 90 85"   stroke="#0a0503" stroke-width="3.8" fill="none" stroke-linecap="round"/>
+  <path d="M 110 85 Q 120 80, 128 86" stroke="#0a0503" stroke-width="3.8" fill="none" stroke-linecap="round"/>
 
-    # Python-side engine demo — shows the same position evaluation
-    with st.expander("🧠 Python engine preview", expanded=False):
-        st.caption(
-            "The board runs client-side for instant response. "
-            "Below is the Python rules engine that mirrors the same logic — useful for tests and server-side analysis."
-        )
-        engine = ChessEngine()
-        st.code(engine.ascii_board(), language="text")
-        st.write(f"**Turn:** {'White' if engine.turn == 'w' else 'Black'}")
-        st.write(f"**Legal moves available:** {len(engine.all_legal_moves())}")
+  <ellipse cx="82"  cy="102" rx="9.5" ry="10.5" fill="#ffffff"/>
+  <ellipse cx="118" cy="102" rx="9.5" ry="10.5" fill="#ffffff"/>
+  <ellipse cx="82"  cy="103" rx="6.4" ry="7.6"  fill="#2a1a0e"/>
+  <ellipse cx="118" cy="103" rx="6.4" ry="7.6"  fill="#2a1a0e"/>
+  <circle  cx="82"  cy="104" r="3.2" fill="#0a0503"/>
+  <circle  cx="118" cy="104" r="3.2" fill="#0a0503"/>
+  <circle  cx="84"  cy="100" r="2.4" fill="#ffffff"/>
+  <circle  cx="120" cy="100" r="2.4" fill="#ffffff"/>
+  <circle  cx="80"  cy="106" r="1.2" fill="#ffffff" opacity="0.85"/>
+  <circle  cx="116" cy="106" r="1.2" fill="#ffffff" opacity="0.85"/>
+  <path d="M 72 95 Q 82 89, 92 95"   stroke="#0a0503" stroke-width="2.8" fill="none" stroke-linecap="round"/>
+  <path d="M 108 95 Q 118 89, 128 95" stroke="#0a0503" stroke-width="2.8" fill="none" stroke-linecap="round"/>
 
-    st.markdown("---")
-    st.markdown(
-        "<p style='font-size:.75rem; color:#6d7a96; text-align:center;'>"
-        "Built by Gesner Deslandes<br>Technology Coordinator<br>"
-        "📞 (509)-57385663<br>✉️ deslandes78@gmail.com</p>",
-        unsafe_allow_html=True,
-    )
+  <path d="M 99 108 Q 96 117, 99 119.5 Q 101 120.5, 103 119"
+        stroke="#4a2a15" stroke-width="2.4" fill="none"
+        stroke-linecap="round" stroke-linejoin="round"/>
 
-# ─────────────────────────────────────────────────────────────
-# Main area — embed the interactive chess game
-# ─────────────────────────────────────────────────────────────
-html_path = Path(__file__).parent / "static" / "chess_game.html"
+  <ellipse cx="69"  cy="118" rx="10" ry="6" fill="#c25a3a" opacity="0.42"/>
+  <ellipse cx="131" cy="118" rx="10" ry="6" fill="#c25a3a" opacity="0.42"/>
 
-if not html_path.exists():
-    st.error(
-        "❌ **Missing file:** `static/chess_game.html`\n\n"
-        "Please copy the full HTML from the previous response into "
-        "`static/chess_game.html` (create the `static/` folder if needed)."
-    )
-    st.stop()
+  <path d="M 83 124 Q 100 132, 117 124 Q 100 146, 83 124 Z" fill="#5a1f2a"/>
+  <path d="M 85 125 Q 100 131.5, 115 125 Q 100 137, 85 125 Z" fill="#ffffff"/>
+  <path d="M 87 133 Q 100 142, 113 133" stroke="#7a2a3a" stroke-width="1.4"
+        fill="none" stroke-linecap="round"/>
 
-html_content = html_path.read_text(encoding="utf-8")
+  <g transform="translate(138 58) rotate(12)">
+    <rect x="-11" y="-7" width="22" height="14" rx="3" fill="#00209f"/>
+    <rect x="-11" y="0"  width="22" height="7"  rx="3" fill="#d21034"/>
+    <rect x="-11" y="-7" width="22" height="14" rx="3" fill="none"
+          stroke="#ffd93b" stroke-width="1.5"/>
+    <circle cx="0" cy="0" r="1.8" fill="#ffffff"/>
+  </g>
+</svg>
+"""
 
-# Inject the game. Height ~1150px covers header + board + panels + history.
-components.html(html_content, height=1150, scrolling=True)
 
-# ─────────────────────────────────────────────────────────────
-# Footer
-# ─────────────────────────────────────────────────────────────
-st.markdown(
-    """
-    <div style="text-align:center; padding: 18px 0 6px 0;
-                color:#6d7a96; font-size:.78rem;">
-        ♛ Ariana Chess Academy — practice responsibly, play beautifully.
-    </div>
-    """,
-    unsafe_allow_html=True,
-)
+def get_ariana_svg() -> str:
+    """Return Ariana's cartoon avatar as an inline SVG string."""
+    return _ARIANA_SVG.strip()
